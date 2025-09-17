@@ -1,0 +1,5 @@
+{
+  "name": "LSP P1 Digital",
+  "description": "A web application for LSP P1 (Lembaga Sertifikasi Profesi Pihak Pertama) Digital, providing information and registration for vocational school student competency certification.",
+  "requestFramePermissions": []
+}
