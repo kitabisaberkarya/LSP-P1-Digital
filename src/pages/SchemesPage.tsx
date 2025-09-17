@@ -10,7 +10,6 @@ interface SchemesPageProps {
 
 const SchemesPage: React.FC<SchemesPageProps> = ({ navigate }) => {
   const schemes: CertificationScheme[] = schemesData;
-  const loading = false;
 
   return (
     <div className="bg-white py-16 sm:py-24">
@@ -18,19 +17,15 @@ const SchemesPage: React.FC<SchemesPageProps> = ({ navigate }) => {
         <div className="text-center">
           <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">Skema Sertifikasi Profesi</h1>
           <p className="mt-4 text-xl text-gray-500 max-w-3xl mx-auto">
-            Pilih skema sertifikasi yang paling sesuai dengan minat dan bakat Anda untuk mempersiapkan karir di dunia industri digital.
+            Pilih skema sertifikasi yang paling sesuai dengan minat dan bakat Anda untuk mempersiapkan karir di dunia industri.
           </p>
         </div>
         <div className="mt-16">
-          {loading ? (
-            <div className="text-center text-gray-500">Memuat skema...</div>
-          ) : (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {schemes.map(scheme => (
                 <SchemeCard key={scheme.id} scheme={scheme} navigate={navigate} />
               ))}
             </div>
-          )}
         </div>
       </div>
     </div>

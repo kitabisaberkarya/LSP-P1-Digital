@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Page } from '../App';
 
@@ -96,14 +95,13 @@ const Header: React.FC<HeaderProps> = ({ activePage, navigate }) => {
   return (
     <>
       {/* --- Top Header for All Screens --- */}
-      {/* This header is now sticky on all screen sizes to ensure it's always visible. */}
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 w-full z-40">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center md:justify-between h-16">
             <div className="flex-shrink-0">
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('home'); }} className="flex items-center space-x-2">
-                <img src="https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png" alt="LSP P1 Logo" className="h-10 w-auto" />
-                <span className="text-xl font-bold text-gray-800">LSP P1 SMK Dr. Soetomo</span>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('home'); }} className="flex items-center space-x-3">
+                <img src="https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png" alt="LSP Logo" className="h-10 w-auto" />
+                <span className="text-lg font-bold text-gray-800">LSP P1 SMK Dr. Soetomo</span>
               </a>
             </div>
             {/* --- Desktop Navigation --- */}
@@ -122,13 +120,10 @@ const Header: React.FC<HeaderProps> = ({ activePage, navigate }) => {
       </header>
 
       {/* --- Mobile Bottom Animated Navigation --- */}
-      {/* 'fixed' class ensures this navigation bar stays at the bottom of the screen on mobile and does not move on scroll. */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#A3B899] h-16 shadow-[0_-4px_10px_rgba(0,0,0,0.08)] z-50 border-t border-black/5">
-          <div className="absolute top-1.5 left-0 h-1.5 w-1/6 flex justify-center items-center transition-transform duration-500 transition-bounce"
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white h-16 shadow-[0_-4px_10px_rgba(0,0,0,0.08)] z-50 border-t">
+          <div className="absolute top-0 left-0 h-1 w-1/6 bg-blue-600 transition-transform duration-300 ease-in-out"
               style={{ transform: `translateX(${activeIndex * 100}%)` }}
-          >
-              <div className="w-1.5 h-1.5 bg-gray-800 rounded-full"></div>
-          </div>
+          />
           <div className="relative flex h-full items-center">
               {navLinks.map(({ page, label, icon }) => (
                   <MobileNavLink

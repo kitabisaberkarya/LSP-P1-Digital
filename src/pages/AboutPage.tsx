@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const ProfileItem: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (

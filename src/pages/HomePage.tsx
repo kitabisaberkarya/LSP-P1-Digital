@@ -1,9 +1,8 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { Page } from '../App';
 import type { CertificationScheme } from '../types';
-import { supabase } from '../lib/supabaseClient';
 import SchemeCard from '../components/SchemeCard';
+import { schemesData } from '../constants'; // Import static data
 
 interface HomePageProps {
   navigate: (page: Page) => void;
@@ -20,10 +19,10 @@ const HeroSection: React.FC<{ navigate: (page: Page) => void }> = ({ navigate })
           <div className="sm:text-center lg:text-left">
             <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
               <span className="block xl:inline">Sertifikasi Profesi</span>{' '}
-              <span className="block text-blue-600 xl:inline">Era Digital</span>
+              <span className="block text-blue-600 xl:inline">SMK Dr. Soetomo</span>
             </h1>
             <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-              Tunjukkan kompetensi dan keahlianmu di dunia kerja dengan sertifikasi resmi dari BNSP melalui LSP P1 Digital sekolahmu.
+              Tunjukkan kompetensi dan keahlianmu di dunia kerja dengan sertifikasi resmi dari BNSP melalui LSP P1 SMK Dr. Soetomo Surabaya.
             </p>
             <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
               <div className="rounded-md shadow">
@@ -54,10 +53,10 @@ const ProfileSnippet: React.FC = () => (
                 {/* Left Column: Profile Info */}
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                        SMK Dr. Soetomo Surabaya
+                        LSP P1 SMK Dr. Soetomo Surabaya
                     </h2>
                     <p className="mt-2 text-lg text-gray-600">
-                        Profile Lembaga Sertifikasi Profesi (LSP)
+                        Profil Lembaga Sertifikasi Profesi
                     </p>
                     <dl className="mt-6 space-y-3 text-sm">
                         <div className="flex"><dt className="w-40 font-medium text-gray-500 shrink-0">No. SK Lisensi</dt><dd className="text-gray-900">: KEP.0933/BNSP/IV/2025</dd></div>
@@ -144,27 +143,8 @@ const BenefitsSection: React.FC = () => {
 }
 
 const FeaturedSchemes: React.FC<{ navigate: (page: Page) => void }> = ({ navigate }) => {
-    const [schemes, setSchemes] = useState<CertificationScheme[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchSchemes = async () => {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('schemes')
-                .select('id, title, description')
-                .limit(3);
-
-            if (error) {
-                console.error('Error fetching schemes:', error);
-            } else {
-                setSchemes(data || []);
-            }
-            setLoading(false);
-        };
-
-        fetchSchemes();
-    }, []);
+    // Use the first 3 schemes from the static data
+    const schemes: CertificationScheme[] = schemesData.slice(0, 3);
 
     return (
         <div className="bg-gray-50 py-16">
@@ -175,15 +155,11 @@ const FeaturedSchemes: React.FC<{ navigate: (page: Page) => void }> = ({ navigat
                         Beberapa skema populer yang paling diminati oleh industri saat ini.
                     </p>
                 </div>
-                {loading ? (
-                    <div className="text-center text-gray-500">Memuat skema...</div>
-                ) : (
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {schemes.map(scheme => (
-                            <SchemeCard key={scheme.id} scheme={scheme} navigate={navigate} />
-                        ))}
-                    </div>
-                )}
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    {schemes.map(scheme => (
+                        <SchemeCard key={scheme.id} scheme={scheme} navigate={navigate} />
+                    ))}
+                </div>
                 <div className="mt-12 text-center">
                     <a href="#" onClick={(e) => { e.preventDefault(); navigate('schemes'); }} className="text-lg font-semibold text-blue-600 hover:text-blue-800">
                         Lihat Semua Skema &rarr;

@@ -119,9 +119,8 @@ const RegistrationPage: React.FC = () => {
     useEffect(() => {
       if (formData.province) {
           const provinceData = addressData[formData.province as keyof typeof addressData];
-          const cityKeys = Object.keys(provinceData);
+          const cityKeys = provinceData ? Object.keys(provinceData) : [];
           setCities(cityKeys);
-          // Reset downstream selections
           setFormData(prev => ({ ...prev, city: '', district: '', village: '' }));
           setDistricts([]);
           setVillages([]);
@@ -136,31 +135,29 @@ const RegistrationPage: React.FC = () => {
     useEffect(() => {
         if (formData.province && formData.city) {
             const provinceData = addressData[formData.province as keyof typeof addressData];
-            const cityData = provinceData[formData.city as keyof typeof provinceData];
-            const districtKeys = Object.keys(cityData);
+            const cityData = provinceData?.[formData.city as keyof typeof provinceData];
+            const districtKeys = cityData ? Object.keys(cityData) : [];
             setDistricts(districtKeys);
-            // Reset downstream selections
             setFormData(prev => ({ ...prev, district: '', village: '' }));
             setVillages([]);
         } else {
             setDistricts([]);
             setVillages([]);
         }
-    }, [formData.city]);
+    }, [formData.city, formData.province]);
 
     // Effect for populating villages based on district
     useEffect(() => {
         if (formData.province && formData.city && formData.district) {
             const provinceData = addressData[formData.province as keyof typeof addressData];
-            const cityData = provinceData[formData.city as keyof typeof provinceData];
-            const districtData = cityData[formData.district as keyof typeof cityData];
-            setVillages(districtData);
-            // Reset downstream selections
+            const cityData = provinceData?.[formData.city as keyof typeof provinceData];
+            const districtData = cityData?.[formData.district as keyof typeof cityData];
+            setVillages(districtData || []);
             setFormData(prev => ({ ...prev, village: '' }));
         } else {
             setVillages([]);
         }
-    }, [formData.district]);
+    }, [formData.district, formData.city, formData.province]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
