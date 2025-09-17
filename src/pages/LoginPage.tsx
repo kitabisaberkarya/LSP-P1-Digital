@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Page, Role } from '../App';
 
@@ -136,6 +135,27 @@ const LoginPage: React.FC<LoginPageProps> = ({ navigate, onLogin }) => {
             </div>
           </form>
         </div>
+      </div>
+
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md space-y-4">
+        <a 
+            href="#"
+            onClick={(e) => { e.preventDefault(); navigate('registration'); }}
+            className="w-full flex items-center justify-center px-4 py-3 bg-white text-gray-700 font-medium rounded-lg shadow-md hover:bg-gray-50 transition-colors"
+            aria-label="Mendaftar akun baru"
+        >
+            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+            <span>Belum punya akun? <span className="font-semibold">Mendaftar</span></span>
+        </a>
+        <a 
+            href="#"
+            onClick={(e) => { e.preventDefault(); navigate('home'); }}
+            className="w-full flex items-center justify-center px-4 py-3 bg-white/80 text-gray-600 font-medium rounded-lg shadow-md hover:bg-white transition-colors"
+            aria-label="Kembali ke beranda"
+        >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3v-6a1 1 0 011-1h2a1 1 0 011 1v6h3a1 1 0 001-1V10l-7-7-7 7z" /></svg>
+            Kembali ke Beranda
+        </a>
       </div>
     </div>
   );
