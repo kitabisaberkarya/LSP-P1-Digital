@@ -30,7 +30,7 @@ const UserModal: React.FC<{
     if (!isOpen) return null;
 
     const handleSubmit = () => {
-        onSave({ id: user?.id || Date.now().toString(), name, email, role });
+        onSave({ id: user?.id || `new-${Date.now()}`, name, email, role });
     };
 
     return (
@@ -144,7 +144,6 @@ const DashboardSuperAdmin: React.FC = () => {
         for (const key of keysToSave) {
             let value = settings[key];
 
-            // Handle file uploads
             if (key === 'logo_url' && logoFile) {
                 const url = await uploadFile(logoFile, `logo-${Date.now()}`);
                 if (url) value = url;
@@ -176,81 +175,31 @@ const DashboardSuperAdmin: React.FC = () => {
 
     const handleSaveUser = async (user: User) => {
         const { id, ...upsertData } = user;
-        const { error } = await supabase.from('users').upsert({ id: user.id.startsWith('new-') ? undefined : user.id, ...upsertData });
+        const finalData = id.startsWith('new-') ? upsertData : { id, ...upsertData };
+
+        const { error } = await supabase.from('users').upsert(finalData);
 
         if (error) console.error('Error saving user:', error);
-        else await fetchUsers(); // Refresh user list
+        else await fetchUsers(); 
         
         setIsModalOpen(false);
         setEditingUser(null);
     };
 
-    // --- RENDER LOGIC ---
     if (loading) return <div className="p-8 text-center">Memuat pengaturan...</div>;
 
-    const renderGeneral = () => (
-        <div className="space-y-8">
-            <ControlCard 
-                title="Identitas Situs"
-                actionSection={<button onClick={() => handleSaveSettings(['logo_url', 'favicon_url'], "Identitas situs disimpan!")} disabled={saving} className="...">{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
-            >
-                <FileUpload label="Logo Aplikasi" previewUrl={settings.logo_url || 'https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png'} onFileChange={(e) => handleFileChange(e, setLogoFile, 'logo_url')} />
-                <FileUpload label="Favicon" previewUrl={settings.favicon_url || '/vite.svg'} onFileChange={(e) => handleFileChange(e, setFaviconFile, 'favicon_url')} />
-            </ControlCard>
-            <ControlCard 
-                title="Pengaturan Aplikasi"
-                 actionSection={<button onClick={() => handleSaveSettings(['registration_enabled'], "Pengaturan aplikasi disimpan!")} disabled={saving} className="...">{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
-            >
-                <ToggleSwitch label="Aktifkan Pendaftaran" enabled={settings.registration_enabled === 'true'} onToggle={(val) => handleSettingChange('registration_enabled', val)} />
-            </ControlCard>
-        </div>
-    );
+    const baseButtonClasses = "px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400";
     
-    const renderAppearance = () => (
-         <ControlCard 
-            title="Kustomisasi Halaman Utama"
-            actionSection={<button onClick={() => handleSaveSettings(['banner_url', 'about_content'], "Tampilan disimpan!")} disabled={saving} className="...">{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
-        >
-            <FileUpload label="Gambar Banner / Hero" previewUrl={settings.banner_url || 'https://picsum.photos/1000/800?random=1'} onFileChange={(e) => handleFileChange(e, setBannerFile, 'banner_url')} />
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Konten "Tentang Kami"</label>
-                <textarea
-                    rows={5}
-                    value={settings.about_content || 'LSP P1 SMK DR. SOETOMO SURABAYA adalah lembaga sertifikasi profesi pihak pertama yang berlisensi BNSP untuk memastikan siswa memiliki kompetensi yang diakui secara nasional.'}
-                    onChange={(e) => handleSettingChange('about_content', e.target.value)}
-                    className="mt-2 block w-full ..."
-                />
-            </div>
-        </ControlCard>
-    );
-
-    const renderAccess = () => (
-        <ControlCard 
-            title="Manajemen Akses Pengguna"
-            actionSection={<button onClick={() => { setEditingUser(null); setIsModalOpen(true); }} className="...">{saving ? 'Menyimpan...' : 'Tambah Pengguna'}</button>}
-        >
-            <div className="overflow-x-auto">
-                <table className="min-w-full ...">
-                    {/* Table Head */}
-                    <tbody>
-                        {users.map(user => (
-                            <tr key={user.id}>
-                                {/* Table Cells */}
-                                <td className="..."><button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="text-slate-600 hover:text-slate-900">Edit</button></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </ControlCard>
-    );
-
-    // Main component return
     return (
       <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-full">
          <SuccessNotification message={successMessage} show={showSuccess} />
          <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={editingUser} />
-         {/* ... Tabs and content rendering ... */}
+         
+         <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-800">Pengaturan Website</h1>
+            <p className="mt-1 text-gray-600">Kelola identitas, tampilan, dan fungsionalitas aplikasi LSP dari sini.</p>
+        </div>
+         
          <div className="border-b border-slate-200 mb-8">
             <nav className="-mb-px flex space-x-6">
                 <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')}>General</TabButton>
@@ -260,21 +209,86 @@ const DashboardSuperAdmin: React.FC = () => {
         </div>
 
         <div>
-            {activeTab === 'general' && renderGeneral()}
-            {activeTab === 'appearance' && renderAppearance()}
-            {activeTab === 'access' && renderAccess()}
+            {activeTab === 'general' && (
+              <div className="space-y-8">
+                <ControlCard 
+                    title="Identitas Situs"
+                    actionSection={<button onClick={() => handleSaveSettings(['logo_url', 'favicon_url'], "Identitas situs disimpan!")} disabled={saving} className={baseButtonClasses}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
+                >
+                    <FileUpload label="Logo Aplikasi" previewUrl={settings.logo_url || 'https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png'} onFileChange={(e) => handleFileChange(e, setLogoFile, 'logo_url')} />
+                    <FileUpload label="Favicon" previewUrl={settings.favicon_url || '/vite.svg'} onFileChange={(e) => handleFileChange(e, setFaviconFile, 'favicon_url')} />
+                </ControlCard>
+                <ControlCard 
+                    title="Pengaturan Aplikasi"
+                    actionSection={<button onClick={() => handleSaveSettings(['registration_enabled'], "Pengaturan aplikasi disimpan!")} disabled={saving} className={baseButtonClasses}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
+                >
+                    <ToggleSwitch label="Aktifkan Pendaftaran" enabled={settings.registration_enabled === 'true'} onToggle={(val) => handleSettingChange('registration_enabled', val)} />
+                </ControlCard>
+              </div>
+            )}
+            {activeTab === 'appearance' && (
+              <ControlCard 
+                  title="Kustomisasi Halaman Utama"
+                  actionSection={<button onClick={() => handleSaveSettings(['banner_url', 'about_content'], "Tampilan disimpan!")} disabled={saving} className={baseButtonClasses}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>}
+              >
+                  <FileUpload label="Gambar Banner / Hero" previewUrl={settings.banner_url || 'https://picsum.photos/1000/800?random=1'} onFileChange={(e) => handleFileChange(e, setBannerFile, 'banner_url')} />
+                  <div>
+                      <label className="block text-sm font-medium text-gray-700">Konten "Tentang Kami"</label>
+                      <textarea
+                          rows={5}
+                          value={settings.about_content || 'LSP P1 SMK DR. SOETOMO SURABAYA adalah lembaga sertifikasi profesi pihak pertama yang berlisensi BNSP untuk memastikan siswa memiliki kompetensi yang diakui secara nasional.'}
+                          onChange={(e) => handleSettingChange('about_content', e.target.value)}
+                          className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      />
+                  </div>
+              </ControlCard>
+            )}
+            {activeTab === 'access' && (
+               <ControlCard 
+                  title="Manajemen Akses Pengguna"
+                  actionSection={<button onClick={() => { setEditingUser(null); setIsModalOpen(true); }} className={baseButtonClasses}>Tambah Pengguna</button>}
+               >
+                  <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-slate-200">
+                           <thead className="bg-slate-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
+                                    <th className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
+                                </tr>
+                            </thead>
+                          <tbody className="bg-white divide-y divide-slate-200">
+                              {users.map(user => (
+                                  <tr key={user.id}>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                          <div className="text-sm text-gray-500">{user.email}</div>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                            {user.role}
+                                        </span>
+                                      </td>
+                                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="text-slate-600 hover:text-slate-900">Edit</button>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      </table>
+                  </div>
+              </ControlCard>
+            )}
         </div>
       </div>
     );
 };
 
-// Simplified TabButton for brevity
 const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
     <button onClick={onClick} className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${active ? 'border-b-2 border-slate-700 text-slate-800 font-semibold' : 'text-gray-500 hover:text-slate-700'}`}>
         {children}
     </button>
 );
-// Simplified ControlCard, FileUpload, ToggleSwitch for brevity
 const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSection?: React.ReactNode }> = ({ title, children, actionSection }) => (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
         <h3 className="text-lg font-bold text-gray-800">{title}</h3>

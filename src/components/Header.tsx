@@ -45,7 +45,7 @@ const MobileNavLink: React.FC<{
   icon: React.ReactElement<{ className?: string }>;
   label: string;
 }> = ({ page, isActive, navigate, icon, label }) => {
-  const activeColor = 'text-gray-800';
+  const activeColor = 'text-blue-600 font-bold';
   const inactiveColor = 'text-gray-600';
 
   return (
@@ -57,7 +57,7 @@ const MobileNavLink: React.FC<{
     >
       {React.cloneElement(icon, {
         className: `h-6 w-6 mb-0.5 transition-colors duration-300 ${
-          isActive ? activeColor : inactiveColor
+          isActive ? 'text-blue-600' : inactiveColor
         }`
       })}
       <span className={`text-xs font-medium transition-colors duration-300 ${
