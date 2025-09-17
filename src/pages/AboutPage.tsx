@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 
 const AboutPage: React.FC = () => {
@@ -9,7 +8,7 @@ const AboutPage: React.FC = () => {
         <div className="lg:text-center">
           <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Tentang Kami</h2>
           <p className="mt-2 text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
-            Mengenal LSP P1 Digital
+            Mengenal LSP P1 SMK DR. SOETOMO SURABAYA
           </p>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
             Kami adalah lembaga yang berkomitmen untuk meningkatkan kualitas dan daya saing lulusan SMK melalui sertifikasi profesi yang terpercaya.
@@ -42,7 +41,7 @@ const AboutPage: React.FC = () => {
           <div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Dasar Hukum</h3>
             <p>
-              LSP P1 Digital didirikan dan beroperasi berdasarkan lisensi dari Badan Nasional Sertifikasi Profesi (BNSP) dan mematuhi semua peraturan perundang-undangan yang berlaku di Indonesia terkait sistem sertifikasi kompetensi kerja. Kami berkomitmen penuh untuk menjaga integritas dan kredibilitas setiap sertifikat yang kami terbitkan.
+              LSP P1 SMK DR. SOETOMO SURABAYA didirikan dan beroperasi berdasarkan lisensi dari Badan Nasional Sertifikasi Profesi (BNSP) dan mematuhi semua peraturan perundang-undangan yang berlaku di Indonesia terkait sistem sertifikasi kompetensi kerja. Kami berkomitmen penuh untuk menjaga integritas dan kredibilitas setiap sertifikat yang kami terbitkan.
             </p>
           </div>
         </div>

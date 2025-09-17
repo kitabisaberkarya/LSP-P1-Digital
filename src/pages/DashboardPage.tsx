@@ -18,7 +18,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ role, onLogout }) => {
     asesi: { name: 'Budi Santoso', email: 'budi.santoso@email.com' },
     asesor: { name: 'Siti Aminah, S.Kom', email: 's.aminah@email.com' },
     admin: { name: 'Dhega Febiharsa', email: 'febiharsa@gmail.com' },
-    superadmin: { name: 'Super Admin', email: 'super.admin@lsp.smekdors' },
+    superadmin: { name: 'Super Admin', email: 'super.admin@lsp.smkdrsoetomo.sch.id' },
   };
 
   const renderDashboardContent = () => {

@@ -56,7 +56,7 @@ const AboutSnippet: React.FC = () => (
                     Lembaga Sertifikasi Profesi Pihak Pertama
                 </p>
                 <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-                    LSP P1 Digital didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.
+                    LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.
                 </p>
             </div>
         </div>

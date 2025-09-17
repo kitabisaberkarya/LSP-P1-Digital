@@ -73,12 +73,12 @@ const DashboardSuperAdmin: React.FC = () => {
     
     // State for General Settings
     const [registrationEnabled, setRegistrationEnabled] = useState(true);
-    const [logoPreview, setLogoPreview] = useState('https://lsp.smkn8smd.sch.id/upload/image/logo_lsp_new.png');
+    const [logoPreview, setLogoPreview] = useState('https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png');
     const [faviconPreview, setFaviconPreview] = useState('/vite.svg');
 
     // State for Appearance Settings
     const [aboutContent, setAboutContent] = useState(
-        'LSP P1 Digital didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.'
+        'LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.'
     );
     const [bannerPreview, setBannerPreview] = useState('https://picsum.photos/1000/800?random=1');
 
