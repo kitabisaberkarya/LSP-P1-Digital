@@ -9,17 +9,14 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
   return (
-    <div className={`relative ${color} text-white p-4 rounded-lg shadow-md overflow-hidden h-32 flex flex-col justify-between`}>
-      <div className="relative z-10">
-        <h3 className="text-3xl font-bold">{value}</h3>
-        <p className="mt-1 text-sm">{title}</p>
+    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 flex items-start space-x-4">
+      <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg ${color.replace('text', 'bg')}/10`}>
+        {React.cloneElement(icon, { className: `w-6 h-6 ${color}` })}
       </div>
-      <div className="absolute top-1/2 -right-4 -translate-y-1/2 opacity-20 text-white z-0">
-        {React.cloneElement(icon, { className: "w-24 h-24" })}
+      <div className="flex-1">
+        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">{title}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
       </div>
-      <a href="#" className="relative z-10 bg-black/20 hover:bg-black/30 text-center py-1 text-xs font-medium rounded-sm transition-colors mt-2">
-        Lihat data <span aria-hidden="true">&rarr;</span>
-      </a>
     </div>
   );
 };

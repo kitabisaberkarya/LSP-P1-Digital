@@ -32,31 +32,33 @@ const UserModal: React.FC<{
     const handleSubmit = () => {
         onSave({ id: user?.id || `new-${Date.now()}`, name, email, role });
     };
+    
+    const inputClasses = "mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-slate-700 dark:border-slate-600 dark:text-white";
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6">{user ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h2>
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-200 dark:border-slate-700">
+                <h2 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">{user ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h2>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500" />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Nama Lengkap</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClasses} />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500" />
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClasses} />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Role</label>
-                        <select value={role} onChange={(e) => setRole(e.target.value as 'Admin' | 'Asesor')} className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Role</label>
+                        <select value={role} onChange={(e) => setRole(e.target.value as 'Admin' | 'Asesor')} className={inputClasses}>
                             <option value="Admin">Admin</option>
                             <option value="Asesor">Asesor</option>
                         </select>
                     </div>
                 </div>
                 <div className="flex justify-end space-x-4 mt-8">
-                    <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Batal</button>
-                    <button onClick={handleSubmit} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700">Simpan</button>
+                    <button onClick={onClose} className="px-5 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 dark:text-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600">Batal</button>
+                    <button onClick={handleSubmit} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-700">Simpan</button>
                 </div>
             </div>
         </div>
@@ -186,21 +188,21 @@ const DashboardSuperAdmin: React.FC = () => {
         setEditingUser(null);
     };
 
-    if (loading) return <div className="p-8 text-center">Memuat pengaturan...</div>;
+    if (loading) return <div className="p-8 text-center dark:text-slate-300">Memuat pengaturan...</div>;
 
-    const baseButtonClasses = "px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400";
+    const baseButtonClasses = "px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400 dark:bg-blue-600 dark:hover:bg-blue-700";
     
     return (
-      <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-full">
+      <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-900 min-h-full">
          <SuccessNotification message={successMessage} show={showSuccess} />
          <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={editingUser} />
          
          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-800">Pengaturan Website</h1>
-            <p className="mt-1 text-gray-600">Kelola identitas, tampilan, dan fungsionalitas aplikasi LSP dari sini.</p>
+            <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Pengaturan Website</h1>
+            <p className="mt-1 text-slate-600 dark:text-slate-400">Kelola identitas, tampilan, dan fungsionalitas aplikasi LSP dari sini.</p>
         </div>
          
-         <div className="border-b border-slate-200 mb-8">
+         <div className="border-b border-slate-200 dark:border-slate-700 mb-8">
             <nav className="-mb-px flex space-x-6">
                 <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')}>General</TabButton>
                 <TabButton active={activeTab === 'appearance'} onClick={() => setActiveTab('appearance')}>Tampilan</TabButton>
@@ -233,12 +235,12 @@ const DashboardSuperAdmin: React.FC = () => {
               >
                   <FileUpload label="Gambar Banner / Hero" previewUrl={settings.banner_url || 'https://picsum.photos/1000/800?random=1'} onFileChange={(e) => handleFileChange(e, setBannerFile, 'banner_url')} />
                   <div>
-                      <label className="block text-sm font-medium text-gray-700">Konten "Tentang Kami"</label>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Konten "Tentang Kami"</label>
                       <textarea
                           rows={5}
                           value={settings.about_content || 'LSP P1 SMK DR. SOETOMO SURABAYA adalah lembaga sertifikasi profesi pihak pertama yang berlisensi BNSP untuk memastikan siswa memiliki kompetensi yang diakui secara nasional.'}
                           onChange={(e) => handleSettingChange('about_content', e.target.value)}
-                          className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 dark:bg-slate-700 dark:border-slate-600"
                       />
                   </div>
               </ControlCard>
@@ -249,20 +251,20 @@ const DashboardSuperAdmin: React.FC = () => {
                   actionSection={<button onClick={() => { setEditingUser(null); setIsModalOpen(true); }} className={baseButtonClasses}>Tambah Pengguna</button>}
                >
                   <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-slate-200">
-                           <thead className="bg-slate-50">
+                      <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                           <thead className="bg-slate-50 dark:bg-slate-700/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Nama</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Role</th>
                                     <th className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
                                 </tr>
                             </thead>
-                          <tbody className="bg-white divide-y divide-slate-200">
+                          <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                               {users.map(user => (
                                   <tr key={user.id}>
                                       <td className="px-6 py-4 whitespace-nowrap">
-                                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                          <div className="text-sm text-gray-500">{user.email}</div>
+                                          <div className="text-sm font-medium text-slate-900 dark:text-white">{user.name}</div>
+                                          <div className="text-sm text-slate-500 dark:text-slate-400">{user.email}</div>
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
@@ -270,7 +272,7 @@ const DashboardSuperAdmin: React.FC = () => {
                                         </span>
                                       </td>
                                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="text-slate-600 hover:text-slate-900">Edit</button>
+                                        <button onClick={() => { setEditingUser(user); setIsModalOpen(true); }} className="text-slate-600 hover:text-slate-900 dark:text-blue-400 dark:hover:text-blue-300">Edit</button>
                                       </td>
                                   </tr>
                               ))}
@@ -285,27 +287,27 @@ const DashboardSuperAdmin: React.FC = () => {
 };
 
 const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
-    <button onClick={onClick} className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${active ? 'border-b-2 border-slate-700 text-slate-800 font-semibold' : 'text-gray-500 hover:text-slate-700'}`}>
+    <button onClick={onClick} className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${active ? 'border-b-2 border-slate-700 dark:border-blue-500 text-slate-800 dark:text-slate-200 font-semibold' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
         {children}
     </button>
 );
 const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSection?: React.ReactNode }> = ({ title, children, actionSection }) => (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
-        <h3 className="text-lg font-bold text-gray-800">{title}</h3>
-        <div className="border-t my-4"></div>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-8">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white">{title}</h3>
+        <div className="border-t my-4 border-slate-200 dark:border-slate-700"></div>
         <div className="space-y-6">{children}</div>
-        {actionSection && <div className="border-t mt-6 pt-4 flex justify-end">{actionSection}</div>}
+        {actionSection && <div className="border-t mt-6 pt-4 flex justify-end border-slate-200 dark:border-slate-700">{actionSection}</div>}
     </div>
 );
 const FileUpload: React.FC<{ label: string; previewUrl: string; onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, previewUrl, onFileChange }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-        <div className="flex items-center space-x-4"><img src={previewUrl} alt="preview" className="h-16 w-16 object-contain bg-slate-100 p-1 rounded-md border" />
-        <input type="file" onChange={onFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 hover:file:bg-slate-200"/></div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{label}</label>
+        <div className="flex items-center space-x-4"><img src={previewUrl} alt="preview" className="h-16 w-16 object-contain bg-slate-100 dark:bg-slate-700 p-1 rounded-md border border-slate-200 dark:border-slate-600" />
+        <input type="file" onChange={onFileChange} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-slate-100 hover:file:bg-slate-200 dark:file:bg-slate-700 dark:file:text-slate-300 dark:hover:file:bg-slate-600"/></div>
     </div>
 );
 const ToggleSwitch: React.FC<{ label: string; enabled: boolean; onToggle: (enabled: boolean) => void }> = ({ label, enabled, onToggle }) => (
-    <div className="flex items-center justify-between"><span className="font-medium">{label}</span><button type="button" className={`${enabled ? 'bg-slate-800' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`} onClick={() => onToggle(!enabled)}><span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}/></button></div>
+    <div className="flex items-center justify-between"><span className="font-medium text-slate-700 dark:text-slate-300">{label}</span><button type="button" className={`${enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'} relative inline-flex h-6 w-11 items-center rounded-full`} onClick={() => onToggle(!enabled)}><span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}/></button></div>
 );
 
 export default DashboardSuperAdmin;

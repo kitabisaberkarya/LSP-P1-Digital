@@ -1,9 +1,12 @@
 import React from 'react';
+import type { Language } from '../App';
+import { translations } from '../translations';
+
 
 const ProfileItem: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="flex flex-col sm:flex-row py-3 border-b border-gray-200">
-    <dt className="w-full sm:w-2/5 md:w-1/3 text-sm font-medium text-gray-600 shrink-0">{label}</dt>
-    <dd className="w-full sm:w-3/5 md:w-2/3 text-sm text-gray-900 flex items-center mt-1 sm:mt-0">{children}</dd>
+  <div className="flex flex-col sm:flex-row py-3 border-b border-slate-200 dark:border-slate-700">
+    <dt className="w-full sm:w-2/5 md:w-1/3 text-sm font-medium text-slate-600 dark:text-slate-400 shrink-0">{label}</dt>
+    <dd className="w-full sm:w-3/5 md:w-2/3 text-sm text-slate-900 dark:text-slate-200 flex items-center mt-1 sm:mt-0">{children}</dd>
   </div>
 );
 
@@ -27,7 +30,9 @@ const assessors = [
     { no: 17, name: 'Muhammad Najmul Falakh', reg: '000.001413 2018', address: 'Sidoarjo, Jawa Timur' },
 ];
 
-const AboutPage: React.FC = () => {
+const AboutPage: React.FC<{ language: Language }> = ({ language }) => {
+  const t = translations.about;
+
   const profileData = {
     "No. SK Lisensi": "KEP.0933/BNSP/IV/2025",
     "No Lisensi": "BNSP-LSP-1279-ID",
@@ -35,14 +40,14 @@ const AboutPage: React.FC = () => {
     "No Telp": "031 - 5914480",
     "No Hp": "081331048586",
     "No Fax": "031 - 5935031",
-    "Email": <a href="mailto:lspsmkdr.soetomosby@gmail.com" className="text-blue-600 hover:underline break-all">lspsmkdr.soetomosby@gmail.com</a>,
-    "Website": <a href="http://www.smekdors.sch.id/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">http://www.smekdors.sch.id/</a>,
+    "Email": <a href="mailto:lspsmkdr.soetomosby@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline break-all">lspsmkdr.soetomosby@gmail.com</a>,
+    "Website": <a href="http://www.smekdors.sch.id/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">http://www.smekdors.sch.id/</a>,
     "Masa Berlaku Sertifikat": "2026-09-27",
     "Status Lisensi": <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>,
   };
 
   const overviewData = {
-    "TUK": 1,
+    [t.tuk[language]]: 1,
     "SKEMA": 12,
     "ASSESOR": 17,
   };
@@ -55,17 +60,16 @@ const AboutPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 py-16 sm:py-24">
+    <div className="bg-slate-50 dark:bg-slate-900/50 py-16 sm:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left Column: Profile & Address */}
           <div className="lg:col-span-2 space-y-12">
-            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                 SMK Dr. Soetomo Surabaya
               </h2>
-              <p className="mt-2 text-lg text-gray-600 border-b pb-6 mb-6">
-                Profile Lembaga Sertifikasi Profesi (LSP)
+              <p className="mt-2 text-lg text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-6 mb-6">
+                {t.pageTitle[language]}
               </p>
               
               <dl>
@@ -74,33 +78,32 @@ const AboutPage: React.FC = () => {
                 ))}
               </dl>
               
-              <div className="mt-8 pt-6 border-t">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Alamat</h3>
-                <p className="mt-2 text-gray-700">
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{t.address[language]}</h3>
+                <p className="mt-2 text-slate-700 dark:text-slate-300">
                   Jl. Karang Menjangan - Jojoran IV/ 2D Surabaya
                 </p>
               </div>
             </div>
-             {/* Assessors Table */}
-            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Daftar Asesor Kompetensi</h3>
+            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-6">{t.assessors[language]}</h3>
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Asesor</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Registrasi</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">No</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Nama Asesor</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">No Registrasi</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Alamat</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                        <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700 text-sm">
                             {assessors.map((asesor) => (
                                 <tr key={asesor.no}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{asesor.no}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{asesor.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{asesor.reg}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{asesor.address}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400">{asesor.no}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900 dark:text-slate-200">{asesor.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400">{asesor.reg}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-slate-500 dark:text-slate-400">{asesor.address}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -109,24 +112,23 @@ const AboutPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Data Overview & TUK */}
           <div className="space-y-12">
-            <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg sticky top-24">
-               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                Data Overview
+            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 sticky top-24">
+               <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                {t.dataOverview[language]}
               </h3>
               <div className="space-y-3">
                 {Object.entries(overviewData).map(([key, value]) => (
-                   <div key={key} className="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-                      <p className="font-semibold text-gray-700">{key}</p>
-                      <p className="text-2xl font-bold text-gray-900">{value}</p>
+                   <div key={key} className="flex justify-between items-center bg-slate-100 dark:bg-slate-700/50 p-4 rounded-lg">
+                      <p className="font-semibold text-slate-700 dark:text-slate-200">{key}</p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">{value}</p>
                    </div>
                 ))}
               </div>
             </div>
-             <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                Tempat Uji Kompetensi (TUK)
+             <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+               <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                {t.tuk[language]}
               </h3>
               <dl>
                  <ProfileItem label="Kode">{tukData.kode}</ProfileItem>
