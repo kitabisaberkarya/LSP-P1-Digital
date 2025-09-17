@@ -1,7 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../lib/supabaseClient';
 
-// Tab button component
+// --- TYPE DEFINITIONS ---
+type Tab = 'general' | 'appearance' | 'access';
+
+interface User {
+  id?: string;
+  name: string;
+  email: string;
+  role: 'Admin' | 'Asesor';
+}
+
+interface Settings {
+  logoUrl: string;
+  faviconUrl: string;
+  registrationEnabled: boolean;
+  bannerUrl: string;
+  aboutContent: string;
+}
+
+// --- SUB-COMPONENTS ---
 const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
     <button
         onClick={onClick}
@@ -15,7 +34,6 @@ const TabButton: React.FC<{ active: boolean; onClick: () => void; children: Reac
     </button>
 );
 
-// Control card component with elegant styling
 const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSection?: React.ReactNode }> = ({ title, children, actionSection }) => (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <h3 className="text-lg font-bold text-gray-800">{title}</h3>
@@ -32,7 +50,6 @@ const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSe
     </div>
 );
 
-// Modern File Upload component
 const FileUpload: React.FC<{ label: string; previewUrl: string; onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, previewUrl, onFileChange }) => (
     <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
@@ -45,7 +62,6 @@ const FileUpload: React.FC<{ label: string; previewUrl: string; onFileChange: (e
     </div>
 );
 
-// Elegant Toggle Switch component
 const ToggleSwitch: React.FC<{ label: string; enabled: boolean; onToggle: (enabled: boolean) => void }> = ({ label, enabled, onToggle }) => (
     <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-gray-700">{label}</span>
@@ -59,7 +75,6 @@ const ToggleSwitch: React.FC<{ label: string; enabled: boolean; onToggle: (enabl
     </div>
 );
 
-// Success notification component
 const SuccessNotification: React.FC<{ message: string; show: boolean }> = ({ message, show }) => (
     <div className={`fixed top-20 right-8 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50 ${show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
         {message}
@@ -67,39 +82,158 @@ const SuccessNotification: React.FC<{ message: string; show: boolean }> = ({ mes
 );
 
 
+// --- MAIN DASHBOARD COMPONENT ---
 const DashboardSuperAdmin: React.FC = () => {
-    type Tab = 'general' | 'appearance' | 'access';
     const [activeTab, setActiveTab] = useState<Tab>('general');
     
-    // State for General Settings
-    const [registrationEnabled, setRegistrationEnabled] = useState(true);
-    const [logoPreview, setLogoPreview] = useState('https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png');
-    const [faviconPreview, setFaviconPreview] = useState('/vite.svg');
+    // Data State
+    const [settings, setSettings] = useState<Settings>({
+        logoUrl: 'https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png',
+        faviconUrl: '/vite.svg',
+        registrationEnabled: true,
+        bannerUrl: 'https://picsum.photos/1000/800?random=1',
+        aboutContent: 'LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.'
+    });
+    const [users, setUsers] = useState<User[]>([]);
 
-    // State for Appearance Settings
-    const [aboutContent, setAboutContent] = useState(
-        'LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.'
-    );
-    const [bannerPreview, setBannerPreview] = useState('https://picsum.photos/1000/800?random=1');
-
-    // State for notifications
+    // UI State
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string>>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setter(URL.createObjectURL(file));
-        }
-    };
     
-    const handleSave = (message: string) => {
+    // Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [userFormData, setUserFormData] = useState<User>({ name: '', email: '', role: 'Admin' });
+
+    // --- DATA FETCHING ---
+    const fetchDashboardData = useCallback(async () => {
+        setLoading(true);
+        try {
+            // Fetch settings
+            const { data: settingsData, error: settingsError } = await supabase.from('settings').select('key, value');
+            if (settingsError) throw settingsError;
+            
+            if (settingsData) {
+                const newSettings = { ...settings };
+                settingsData.forEach(({ key, value }) => {
+                    switch (key) {
+                        case 'logoUrl': newSettings.logoUrl = value; break;
+                        case 'faviconUrl': newSettings.faviconUrl = value; break;
+                        case 'registrationEnabled': newSettings.registrationEnabled = value === 'true'; break;
+                        case 'bannerUrl': newSettings.bannerUrl = value; break;
+                        case 'aboutContent': newSettings.aboutContent = value; break;
+                    }
+                });
+                setSettings(newSettings);
+            }
+
+            // Fetch users
+            const { data: usersData, error: usersError } = await supabase.from('users').select('id, name, email, role');
+            if (usersError) throw usersError;
+            if(usersData) setUsers(usersData as User[]);
+
+        } catch (error) {
+            console.error("Error loading dashboard data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
+
+    // --- HELPERS ---
+    const showNotification = (message: string) => {
         setSuccessMessage(message);
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
     };
 
+    const handleFileUpload = async (file: File, folder: string): Promise<string> => {
+        if (!file) throw new Error("No file provided.");
+        const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+        const filePath = `${folder}/${fileName}`;
+
+        const { error } = await supabase.storage.from('public_assets').upload(filePath, file);
+        if (error) throw error;
+
+        const { data } = supabase.storage.from('public_assets').getPublicUrl(filePath);
+        return data.publicUrl;
+    };
+    
+    // --- EVENT HANDLERS ---
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, settingKey: keyof Settings, folder: string) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setSettings(prev => ({ ...prev, [settingKey]: URL.createObjectURL(file) })); // Optimistic preview
+            try {
+                const publicUrl = await handleFileUpload(file, folder);
+                setSettings(prev => ({ ...prev, [settingKey]: publicUrl }));
+            } catch (error) {
+                console.error("File upload failed:", error);
+                showNotification("Gagal mengunggah file.");
+                // Optionally revert to old image url
+            }
+        }
+    };
+    
+    const handleSave = async (settingsToSave: {key: string, value: string}[], successMsg: string) => {
+        setSaving(true);
+        const { error } = await supabase.from('settings').upsert(settingsToSave, { onConflict: 'key' });
+        setSaving(false);
+        if (error) {
+            console.error("Error saving settings:", error);
+            showNotification("Gagal menyimpan perubahan.");
+        } else {
+            showNotification(successMsg);
+        }
+    };
+
+    const handleSaveUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSaving(true);
+        try {
+            if (editingUser) { // Update existing user
+                const { error } = await supabase.from('users').update({ ...userFormData }).eq('id', editingUser.id);
+                if (error) throw error;
+                showNotification("Pengguna berhasil diperbarui.");
+            } else { // Create new user
+                const { error } = await supabase.from('users').insert([{ ...userFormData }]);
+                if (error) throw error;
+                showNotification("Pengguna berhasil ditambahkan.");
+            }
+            fetchDashboardData(); // Refresh user list
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error("Error saving user:", error);
+            showNotification("Gagal menyimpan data pengguna.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // --- MODAL CONTROLS ---
+    const openAddModal = () => {
+        setEditingUser(null);
+        setUserFormData({ name: '', email: '', role: 'Admin' });
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (user: User) => {
+        setEditingUser(user);
+        setUserFormData(user);
+        setIsModalOpen(true);
+    };
+    
+    // --- RENDER LOGIC ---
     const renderContent = () => {
+        if (loading) {
+            return <div className="text-center p-10 text-gray-500">Memuat pengaturan...</div>
+        }
+
         switch (activeTab) {
             case 'general':
                 return (
@@ -107,68 +241,70 @@ const DashboardSuperAdmin: React.FC = () => {
                         <ControlCard 
                             title="Identitas Situs"
                             actionSection={
-                                <button onClick={() => handleSave("Identitas situs disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                                    Simpan Perubahan
+                                <button onClick={() => handleSave([
+                                    { key: 'logoUrl', value: settings.logoUrl },
+                                    { key: 'faviconUrl', value: settings.faviconUrl },
+                                ], "Identitas situs disimpan!")} 
+                                disabled={saving}
+                                className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
+                                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
                             }
                         >
-                            <FileUpload label="Logo Aplikasi" previewUrl={logoPreview} onFileChange={(e) => handleFileChange(e, setLogoPreview)} />
-                            <FileUpload label="Favicon (.ico, .svg, .png)" previewUrl={faviconPreview} onFileChange={(e) => handleFileChange(e, setFaviconPreview)} />
+                            <FileUpload label="Logo Aplikasi" previewUrl={settings.logoUrl} onFileChange={(e) => handleFileChange(e, 'logoUrl', 'assets')} />
+                            <FileUpload label="Favicon (.ico, .svg, .png)" previewUrl={settings.faviconUrl} onFileChange={(e) => handleFileChange(e, 'faviconUrl', 'assets')} />
                         </ControlCard>
                         <ControlCard 
                             title="Pengaturan Aplikasi"
                              actionSection={
-                                <button onClick={() => handleSave("Pengaturan aplikasi disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                                    Simpan Perubahan
+                                <button onClick={() => handleSave([{ key: 'registrationEnabled', value: String(settings.registrationEnabled) }], "Pengaturan aplikasi disimpan!")} 
+                                disabled={saving}
+                                className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
+                                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
                                 </button>
                             }
                         >
-                            <ToggleSwitch label="Aktifkan Pendaftaran" enabled={registrationEnabled} onToggle={setRegistrationEnabled} />
+                            <ToggleSwitch label="Aktifkan Pendaftaran" enabled={settings.registrationEnabled} onToggle={(val) => setSettings(s => ({...s, registrationEnabled: val}))} />
                             <p className="text-xs text-gray-500 -mt-4">
-                                {registrationEnabled 
-                                    ? "Pengguna dapat mengakses halaman pendaftaran." 
-                                    : "Halaman pendaftaran akan disembunyikan dari pengguna."
-                                }
+                                {settings.registrationEnabled ? "Pengguna dapat mengakses halaman pendaftaran." : "Halaman pendaftaran akan disembunyikan dari pengguna."}
                             </p>
                         </ControlCard>
                     </div>
                 );
             case 'appearance':
                 return (
-                    <div className="space-y-8">
-                        <ControlCard 
-                            title="Kustomisasi Halaman Utama"
-                            actionSection={
-                                <button onClick={() => handleSave("Tampilan disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                                    Simpan Perubahan
-                                </button>
-                            }
-                        >
-                            <FileUpload label="Gambar Banner / Hero" previewUrl={bannerPreview} onFileChange={(e) => handleFileChange(e, setBannerPreview)} />
-                            <div>
-                                <label htmlFor="aboutContent" className="block text-sm font-medium text-gray-700">Konten "Tentang Kami" di Beranda</label>
-                                <textarea
-                                    id="aboutContent"
-                                    rows={5}
-                                    value={aboutContent}
-                                    onChange={(e) => setAboutContent(e.target.value)}
-                                    className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
-                                />
-                            </div>
-                        </ControlCard>
-                    </div>
+                     <ControlCard 
+                        title="Kustomisasi Halaman Utama"
+                        actionSection={
+                            <button onClick={() => handleSave([
+                                { key: 'bannerUrl', value: settings.bannerUrl },
+                                { key: 'aboutContent', value: settings.aboutContent },
+                            ], "Tampilan disimpan!")} 
+                            disabled={saving}
+                            className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
+                                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </button>
+                        }
+                    >
+                        <FileUpload label="Gambar Banner / Hero" previewUrl={settings.bannerUrl} onFileChange={(e) => handleFileChange(e, 'bannerUrl', 'assets')} />
+                        <div>
+                            <label htmlFor="aboutContent" className="block text-sm font-medium text-gray-700">Konten "Tentang Kami" di Beranda</label>
+                            <textarea
+                                id="aboutContent"
+                                rows={5}
+                                value={settings.aboutContent}
+                                onChange={(e) => setSettings(s => ({...s, aboutContent: e.target.value}))}
+                                className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                            />
+                        </div>
+                    </ControlCard>
                 );
              case 'access':
-                const users = [
-                    { name: 'Dhega Febiharsa', email: 'febiharsa@gmail.com', role: 'Admin' },
-                    { name: 'Siti Aminah, S.Kom', email: 's.aminah@email.com', role: 'Asesor' },
-                    { name: 'Admin LSP', email: 'admin.lsp@email.com', role: 'Admin' },
-                ];
                 return (
                     <ControlCard 
                         title="Manajemen Akses Pengguna"
                         actionSection={
-                            <button className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                            <button onClick={openAddModal} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
                                 Tambah Pengguna Baru
                             </button>
                         }
@@ -195,7 +331,7 @@ const DashboardSuperAdmin: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="#" className="text-slate-600 hover:text-slate-900">Edit</a>
+                                                <button onClick={() => openEditModal(user)} className="text-slate-600 hover:text-slate-900">Edit</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -204,12 +340,45 @@ const DashboardSuperAdmin: React.FC = () => {
                         </div>
                     </ControlCard>
                 );
+            default:
+                return null;
         }
     };
-
+    
     return (
         <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-full">
             <SuccessNotification message={successMessage} show={showSuccess} />
+            
+            {isModalOpen && (
+                 <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4" aria-modal="true">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                        <form onSubmit={handleSaveUser}>
+                            <h2 className="text-xl font-bold text-gray-800 mb-4">{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                                    <input type="text" name="name" id="name" value={userFormData.name} onChange={(e) => setUserFormData(s => ({...s, name: e.target.value}))} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"/>
+                                </div>
+                                <div>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" name="email" id="email" value={userFormData.email} onChange={(e) => setUserFormData(s => ({...s, email: e.target.value}))} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"/>
+                                </div>
+                                <div>
+                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
+                                    <select name="role" id="role" value={userFormData.role} onChange={(e) => setUserFormData(s => ({...s, role: e.target.value as User['role']}))} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-white">
+                                        <option>Admin</option>
+                                        <option>Asesor</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="mt-6 flex justify-end space-x-3">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Batal</button>
+                                <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:bg-slate-400">{saving ? 'Menyimpan...' : 'Simpan'}</button>
+                            </div>
+                        </form>
+                    </div>
+                 </div>
+            )}
 
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-slate-800">Pengaturan Website</h1>
