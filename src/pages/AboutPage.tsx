@@ -28,7 +28,7 @@ const assessors = [
     { no: 15, name: 'Ari Wijaya', reg: 'MET.000.003476 2024', address: 'Sidoarjo, Jawa Timur' },
     { no: 16, name: 'Asslamet', reg: 'No. Reg. MET000.003482 2019', address: 'Kota Surabaya, Jawa Timur' },
     { no: 17, name: 'Muhammad Najmul Falakh', reg: '000.001413 2018', address: 'Sidoarjo, Jawa Timur' },
-];
+].sort((a, b) => a.no - b.no);
 
 const AboutPage: React.FC<{ language: Language }> = ({ language }) => {
   const t = translations.about;
@@ -43,7 +43,7 @@ const AboutPage: React.FC<{ language: Language }> = ({ language }) => {
     "Email": <a href="mailto:lspsmkdr.soetomosby@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline break-all">lspsmkdr.soetomosby@gmail.com</a>,
     "Website": <a href="http://www.smekdors.sch.id/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">http://www.smekdors.sch.id/</a>,
     "Masa Berlaku Sertifikat": "2026-09-27",
-    "Status Lisensi": <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>,
+    "Status Lisensi": <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Aktif</span>,
   };
 
   const overviewData = {
@@ -53,10 +53,10 @@ const AboutPage: React.FC<{ language: Language }> = ({ language }) => {
   };
 
   const tukData = {
-    kode: "TUK.LSP-SMK DR.SOETOMO SBY",
-    jenis: 2,
-    nama: "TUK LSP SMK DR SOETOMO SURABAYA",
-    alamat: "JL. KARANG MENJANGAN - JOJORAN IV/2-D",
+    "Kode": "TUK.LSP-SMK DR.SOETOMO SBY",
+    "Jenis": "2",
+    "Nama": "TUK LSP SMK DR SOETOMO SURABAYA",
+    "Alamat": "JL. KARANG MENJANGAN - JOJORAN IV/2-D",
   };
 
   return (
@@ -131,10 +131,9 @@ const AboutPage: React.FC<{ language: Language }> = ({ language }) => {
                 {t.tuk[language]}
               </h3>
               <dl>
-                 <ProfileItem label="Kode">{tukData.kode}</ProfileItem>
-                 <ProfileItem label="Jenis">{tukData.jenis}</ProfileItem>
-                 <ProfileItem label="Nama">{tukData.nama}</ProfileItem>
-                 <ProfileItem label="Alamat">{tukData.alamat}</ProfileItem>
+                 {Object.entries(tukData).map(([key, value]) => (
+                  <ProfileItem key={key} label={key}>{value}</ProfileItem>
+                ))}
               </dl>
             </div>
           </div>
