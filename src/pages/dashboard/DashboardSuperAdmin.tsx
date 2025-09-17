@@ -1,71 +1,231 @@
-import React from 'react';
-import StatCard from '../../components/dashboard/StatCard';
 
-// Progress Bar Component
-const ProgressBar: React.FC<{ label: string; percentage: number; value: string; color: string; }> = ({ label, percentage, value, color }) => (
-  <div>
-    <div className="flex justify-between mb-1">
-      <span className="text-sm font-medium text-gray-700">{label}</span>
-      <span className="text-sm font-medium text-gray-700">{value}</span>
-    </div>
-    <div className="w-full bg-gray-200 rounded-full h-2.5">
-      <div className={`${color} h-2.5 rounded-full`} style={{ width: `${percentage}%` }}></div>
-    </div>
-  </div>
+import React, { useState } from 'react';
+
+// Tab button component
+const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
+    <button
+        onClick={onClick}
+        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 focus:outline-none ${
+            active 
+                ? 'border-b-2 border-slate-700 text-slate-800 font-semibold' 
+                : 'text-gray-500 hover:text-slate-700'
+        }`}
+    >
+        {children}
+    </button>
 );
 
-// Icon component for Stat Cards
-const CardIcon: React.FC<{ path: string, viewBox?: string }> = ({ path, viewBox = "0 0 24 24" }) => (
-    <svg fill="currentColor" viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
-        <path d={path}></path>
-    </svg>
+// Control card component with elegant styling
+const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSection?: React.ReactNode }> = ({ title, children, actionSection }) => (
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-800">{title}</h3>
+        <div className="border-t border-slate-200 my-4"></div>
+        <div className="space-y-6">{children}</div>
+        {actionSection && (
+            <>
+                <div className="border-t border-slate-200 mt-6 pt-4"></div>
+                <div className="flex justify-end">
+                    {actionSection}
+                </div>
+            </>
+        )}
+    </div>
+);
+
+// Modern File Upload component
+const FileUpload: React.FC<{ label: string; previewUrl: string; onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, previewUrl, onFileChange }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+        <div className="flex items-center space-x-4">
+            <img src={previewUrl} alt={`${label} preview`} className="h-16 w-16 object-contain bg-slate-100 p-1 rounded-md border border-slate-200" />
+            <div className="flex-1">
+                 <input type="file" onChange={onFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer"/>
+            </div>
+        </div>
+    </div>
+);
+
+// Elegant Toggle Switch component
+const ToggleSwitch: React.FC<{ label: string; enabled: boolean; onToggle: (enabled: boolean) => void }> = ({ label, enabled, onToggle }) => (
+    <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <button
+            type="button"
+            className={`${enabled ? 'bg-slate-800' : 'bg-gray-200'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500`}
+            onClick={() => onToggle(!enabled)}
+        >
+            <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
+        </button>
+    </div>
+);
+
+// Success notification component
+const SuccessNotification: React.FC<{ message: string; show: boolean }> = ({ message, show }) => (
+    <div className={`fixed top-20 right-8 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50 ${show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+        {message}
+    </div>
 );
 
 
 const DashboardSuperAdmin: React.FC = () => {
-    const stats = [
-        { title: "T.U.K.", value: 1, color: "bg-cyan-500", icon: <CardIcon viewBox="0 0 20 20" path="M18 8a6 6 0 0 0-12 0c0 3.313 2.687 6 6 6s6-2.687 6-6zm-6 4a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM2 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1z" /> },
-        { title: "Skema Sertifikasi", value: 12, color: "bg-blue-500", icon: <CardIcon viewBox="0 0 20 20" path="M17 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14zm0 2H3v12h14V4zM7 8a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1z" /> },
-        { title: "Asesor", value: 17, color: "bg-green-500", icon: <CardIcon path="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /> },
-        { title: "Asesi / Calon Asesi", value: 1247, color: "bg-orange-400", icon: <CardIcon path="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /> },
-        { title: "Uji Kompetensi", value: 31, color: "bg-indigo-500", icon: <CardIcon path="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-1 14H7v-2h6v2zm-1-4H7v-2h5v2zm-2-4H7V6h2v2z" /> },
-        { title: "Jadwal Asesmen", value: 150, color: "bg-pink-500", icon: <CardIcon path="M17 10H7v2h10v-2zm2-7h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-5-5H7v2h7v-2z" /> },
-    ];
+    type Tab = 'general' | 'appearance' | 'access';
+    const [activeTab, setActiveTab] = useState<Tab>('general');
     
-    return (
-        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-            <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-            <p className="text-gray-500 mb-6">Sistem Informasi Lembaga Sertifikasi Profesi</p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                {stats.map(stat => <StatCard key={stat.title} {...stat} />)}
-            </div>
+    // State for General Settings
+    const [registrationEnabled, setRegistrationEnabled] = useState(true);
+    const [logoPreview, setLogoPreview] = useState('https://lsp.smkn8smd.sch.id/upload/image/logo_lsp_new.png');
+    const [faviconPreview, setFaviconPreview] = useState('/vite.svg');
 
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
-                <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="font-bold text-gray-800 mb-4">Pendaftar dan Kandidat Tahun 2024</h3>
-                    {/* Chart placeholder */}
-                    <div className="h-72 bg-gray-100 rounded-md flex items-center justify-center">
-                        <p className="text-gray-500">Line Chart Placeholder</p>
+    // State for Appearance Settings
+    const [aboutContent, setAboutContent] = useState(
+        'LSP P1 SMK DR. SOETOMO SURABAYA adalah lembaga sertifikasi profesi pihak pertama yang berlisensi BNSP untuk memastikan siswa memiliki kompetensi yang diakui secara nasional.'
+    );
+    const [bannerPreview, setBannerPreview] = useState('https://picsum.photos/1000/800?random=1');
+
+    // State for notifications
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string>>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setter(URL.createObjectURL(file));
+        }
+    };
+    
+    const handleSave = (message: string) => {
+        setSuccessMessage(message);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
+
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'general':
+                return (
+                    <div className="space-y-8">
+                        <ControlCard 
+                            title="Identitas Situs"
+                            actionSection={
+                                <button onClick={() => handleSave("Identitas situs disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                                    Simpan Perubahan
+                                </button>
+                            }
+                        >
+                            <FileUpload label="Logo Aplikasi" previewUrl={logoPreview} onFileChange={(e) => handleFileChange(e, setLogoPreview)} />
+                            <FileUpload label="Favicon (.ico, .svg, .png)" previewUrl={faviconPreview} onFileChange={(e) => handleFileChange(e, setFaviconPreview)} />
+                        </ControlCard>
+                        <ControlCard 
+                            title="Pengaturan Aplikasi"
+                             actionSection={
+                                <button onClick={() => handleSave("Pengaturan aplikasi disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                                    Simpan Perubahan
+                                </button>
+                            }
+                        >
+                            <ToggleSwitch label="Aktifkan Pendaftaran" enabled={registrationEnabled} onToggle={setRegistrationEnabled} />
+                            <p className="text-xs text-gray-500 -mt-4">
+                                {registrationEnabled 
+                                    ? "Pengguna dapat mengakses halaman pendaftaran." 
+                                    : "Halaman pendaftaran akan disembunyikan dari pengguna."
+                                }
+                            </p>
+                        </ControlCard>
                     </div>
-                </div>
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
-                    <div className="mb-6">
-                        <h3 className="font-bold text-gray-800 mb-4">Kemajuan Proses Administratif</h3>
-                        <div className="space-y-4">
-                            <ProgressBar label="Data Asesi telah melengkapi berkas" percentage={0} value="0% (3/1247)" color="bg-blue-600" />
-                            <ProgressBar label="Data asesmen diproses (terjadwal)" percentage={100} value="100% (1279/1281)" color="bg-blue-600" />
+                );
+            case 'appearance':
+                return (
+                    <div className="space-y-8">
+                        <ControlCard 
+                            title="Kustomisasi Halaman Utama"
+                            actionSection={
+                                <button onClick={() => handleSave("Tampilan disimpan!")} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                                    Simpan Perubahan
+                                </button>
+                            }
+                        >
+                            <FileUpload label="Gambar Banner / Hero" previewUrl={bannerPreview} onFileChange={(e) => handleFileChange(e, setBannerPreview)} />
+                            <div>
+                                <label htmlFor="aboutContent" className="block text-sm font-medium text-gray-700">Konten "Tentang Kami" di Beranda</label>
+                                <textarea
+                                    id="aboutContent"
+                                    rows={5}
+                                    value={aboutContent}
+                                    onChange={(e) => setAboutContent(e.target.value)}
+                                    className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
+                                />
+                            </div>
+                        </ControlCard>
+                    </div>
+                );
+             case 'access':
+                const users = [
+                    { name: 'Dhega Febiharsa', email: 'febiharsa@gmail.com', role: 'Admin' },
+                    { name: 'Siti Aminah, S.Kom', email: 's.aminah@email.com', role: 'Asesor' },
+                    { name: 'Admin LSP', email: 'admin.lsp@email.com', role: 'Admin' },
+                ];
+                return (
+                    <ControlCard 
+                        title="Manajemen Akses Pengguna"
+                        actionSection={
+                            <button className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                                Tambah Pengguna Baru
+                            </button>
+                        }
+                    >
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-slate-200">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
+                                        <th scope="col" className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-slate-200">
+                                    {users.map((user) => (
+                                        <tr key={user.email}>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                                <div className="text-sm text-gray-500">{user.email}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="#" className="text-slate-600 hover:text-slate-900">Edit</a>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-gray-800 mb-4">Prosentase Hasil Asesmen</h3>
-                        <div className="space-y-4">
-                            <ProgressBar label="Data Asesmen dinyatakan Kompeten" percentage={75} value="75% (965/1281)" color="bg-green-500" />
-                            <ProgressBar label="Data Asesmen dinyatakan Belum Kompeten" percentage={24} value="24% (313/1281)" color="bg-red-500" />
-                        </div>
-                    </div>
-                     <p className="text-xs text-gray-400 mt-4">*) Data Asesi &lt; Data asesmen, karena dimungkinkan asesi ikut lebih dari 1 skema</p>
-                </div>
+                    </ControlCard>
+                );
+        }
+    };
+
+    return (
+        <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-full">
+            <SuccessNotification message={successMessage} show={showSuccess} />
+
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-slate-800">Pengaturan Website</h1>
+                <p className="mt-1 text-gray-600">Kelola identitas, tampilan, dan fungsionalitas aplikasi LSP dari sini.</p>
+            </div>
+            
+            <div className="border-b border-slate-200 mb-8">
+                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                    <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')}>General</TabButton>
+                    <TabButton active={activeTab === 'appearance'} onClick={() => setActiveTab('appearance')}>Tampilan</TabButton>
+                    <TabButton active={activeTab === 'access'} onClick={() => setActiveTab('access')}>Manajemen Akses</TabButton>
+                </nav>
+            </div>
+            
+            <div>
+                {renderContent()}
             </div>
         </div>
     );

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Role } from '../App';
 import DashboardLayout from '../components/dashboard/DashboardLayout';
@@ -16,8 +17,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ role, onLogout }) => {
   const userMap = {
     asesi: { name: 'Budi Santoso', email: 'budi.santoso@email.com' },
     asesor: { name: 'Siti Aminah, S.Kom', email: 's.aminah@email.com' },
-    admin: { name: 'Admin LSP', email: 'lspsmkdr.soetosby@gmail.com' },
-    superadmin: { name: 'Dhega Febiharsa', email: 'febiharsa@gmail.com' },
+    admin: { name: 'Admin LSP', email: 'lspsmkdr.soetomosby@gmail.com' },
+    superadmin: { name: 'Dhega Febiharsa', email: 'lspsmkdr.soetomosby@gmail.com' },
   };
 
   const renderDashboardContent = () => {
@@ -27,8 +28,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ role, onLogout }) => {
       case 'asesor':
         return <DashboardAsesor />;
       case 'admin':
-        // The admin and superadmin now share the same new dashboard view
-        return <DashboardSuperAdmin />;
+        return <DashboardAdmin />;
       case 'superadmin':
         return <DashboardSuperAdmin />;
       default:
