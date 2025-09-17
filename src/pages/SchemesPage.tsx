@@ -1,0 +1,59 @@
+
+import React, { useState, useEffect } from 'react';
+import type { Page } from '../App';
+import SchemeCard from '../components/SchemeCard';
+import { supabase } from '../lib/supabaseClient';
+import type { CertificationScheme } from '../types';
+
+interface SchemesPageProps {
+  navigate: (page: Page) => void;
+}
+
+const SchemesPage: React.FC<SchemesPageProps> = ({ navigate }) => {
+  const [schemes, setSchemes] = useState<CertificationScheme[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSchemes = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('schemes')
+        .select('id, title, description');
+
+      if (error) {
+        console.error('Error fetching schemes:', error);
+      } else {
+        setSchemes(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchSchemes();
+  }, []);
+
+  return (
+    <div className="bg-white py-16 sm:py-24">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">Skema Sertifikasi Profesi</h1>
+          <p className="mt-4 text-xl text-gray-500 max-w-3xl mx-auto">
+            Pilih skema sertifikasi yang paling sesuai dengan minat dan bakat Anda untuk mempersiapkan karir di dunia industri digital.
+          </p>
+        </div>
+        <div className="mt-16">
+          {loading ? (
+            <div className="text-center text-gray-500">Memuat skema...</div>
+          ) : (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {schemes.map(scheme => (
+                <SchemeCard key={scheme.id} scheme={scheme} navigate={navigate} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SchemesPage;
