@@ -1,400 +1,71 @@
+import React from 'react';
+import StatCard from '../../components/dashboard/StatCard';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-
-// --- TYPE DEFINITIONS ---
-type Tab = 'general' | 'appearance' | 'access';
-
-interface User {
-  id?: string;
-  name: string;
-  email: string;
-  role: 'Admin' | 'Asesor';
-}
-
-interface Settings {
-  logoUrl: string;
-  faviconUrl: string;
-  registrationEnabled: boolean;
-  bannerUrl: string;
-  aboutContent: string;
-}
-
-// --- SUB-COMPONENTS ---
-const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
-    <button
-        onClick={onClick}
-        className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors duration-200 focus:outline-none ${
-            active 
-                ? 'border-b-2 border-slate-700 text-slate-800 font-semibold' 
-                : 'text-gray-500 hover:text-slate-700'
-        }`}
-    >
-        {children}
-    </button>
-);
-
-const ControlCard: React.FC<{ title: string; children: React.ReactNode; actionSection?: React.ReactNode }> = ({ title, children, actionSection }) => (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h3 className="text-lg font-bold text-gray-800">{title}</h3>
-        <div className="border-t border-slate-200 my-4"></div>
-        <div className="space-y-6">{children}</div>
-        {actionSection && (
-            <>
-                <div className="border-t border-slate-200 mt-6 pt-4"></div>
-                <div className="flex justify-end">
-                    {actionSection}
-                </div>
-            </>
-        )}
+// Progress Bar Component
+const ProgressBar: React.FC<{ label: string; percentage: number; value: string; color: string; }> = ({ label, percentage, value, color }) => (
+  <div>
+    <div className="flex justify-between mb-1">
+      <span className="text-sm font-medium text-gray-700">{label}</span>
+      <span className="text-sm font-medium text-gray-700">{value}</span>
     </div>
-);
-
-const FileUpload: React.FC<{ label: string; previewUrl: string; onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, previewUrl, onFileChange }) => (
-    <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-        <div className="flex items-center space-x-4">
-            <img src={previewUrl} alt={`${label} preview`} className="h-16 w-16 object-contain bg-slate-100 p-1 rounded-md border border-slate-200" />
-            <div className="flex-1">
-                 <input type="file" onChange={onFileChange} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-colors cursor-pointer"/>
-            </div>
-        </div>
+    <div className="w-full bg-gray-200 rounded-full h-2.5">
+      <div className={`${color} h-2.5 rounded-full`} style={{ width: `${percentage}%` }}></div>
     </div>
+  </div>
 );
 
-const ToggleSwitch: React.FC<{ label: string; enabled: boolean; onToggle: (enabled: boolean) => void }> = ({ label, enabled, onToggle }) => (
-    <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <button
-            type="button"
-            className={`${enabled ? 'bg-slate-800' : 'bg-gray-200'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500`}
-            onClick={() => onToggle(!enabled)}
-        >
-            <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
-        </button>
-    </div>
-);
-
-const SuccessNotification: React.FC<{ message: string; show: boolean }> = ({ message, show }) => (
-    <div className={`fixed top-20 right-8 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-transform duration-300 z-50 ${show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
-        {message}
-    </div>
+// Icon component for Stat Cards
+const CardIcon: React.FC<{ path: string, viewBox?: string }> = ({ path, viewBox = "0 0 24 24" }) => (
+    <svg fill="currentColor" viewBox={viewBox} xmlns="http://www.w3.org/2000/svg">
+        <path d={path}></path>
+    </svg>
 );
 
 
-// --- MAIN DASHBOARD COMPONENT ---
 const DashboardSuperAdmin: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('general');
-    
-    // Data State
-    const [settings, setSettings] = useState<Settings>({
-        logoUrl: 'https://sisfo.bnsp.go.id/images/PtuE0H7UaNrgdBGsxMAh1FQLCK9IWVDc.png',
-        faviconUrl: '/vite.svg',
-        registrationEnabled: true,
-        bannerUrl: 'https://picsum.photos/1000/800?random=1',
-        aboutContent: 'LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.'
-    });
-    const [users, setUsers] = useState<User[]>([]);
-
-    // UI State
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    
-    // Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [userFormData, setUserFormData] = useState<User>({ name: '', email: '', role: 'Admin' });
-
-    // --- DATA FETCHING ---
-    const fetchDashboardData = useCallback(async () => {
-        setLoading(true);
-        try {
-            // Fetch settings
-            const { data: settingsData, error: settingsError } = await supabase.from('settings').select('key, value');
-            if (settingsError) throw settingsError;
-            
-            if (settingsData) {
-                const newSettings = { ...settings };
-                settingsData.forEach(({ key, value }) => {
-                    switch (key) {
-                        case 'logoUrl': newSettings.logoUrl = value; break;
-                        case 'faviconUrl': newSettings.faviconUrl = value; break;
-                        case 'registrationEnabled': newSettings.registrationEnabled = value === 'true'; break;
-                        case 'bannerUrl': newSettings.bannerUrl = value; break;
-                        case 'aboutContent': newSettings.aboutContent = value; break;
-                    }
-                });
-                setSettings(newSettings);
-            }
-
-            // Fetch users
-            const { data: usersData, error: usersError } = await supabase.from('users').select('id, name, email, role');
-            if (usersError) throw usersError;
-            if(usersData) setUsers(usersData as User[]);
-
-        } catch (error) {
-            console.error("Error loading dashboard data:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
-
-    // --- HELPERS ---
-    const showNotification = (message: string) => {
-        setSuccessMessage(message);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
-    };
-
-    const handleFileUpload = async (file: File, folder: string): Promise<string> => {
-        if (!file) throw new Error("No file provided.");
-        const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-        const filePath = `${folder}/${fileName}`;
-
-        const { error } = await supabase.storage.from('public_assets').upload(filePath, file);
-        if (error) throw error;
-
-        const { data } = supabase.storage.from('public_assets').getPublicUrl(filePath);
-        return data.publicUrl;
-    };
-    
-    // --- EVENT HANDLERS ---
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, settingKey: keyof Settings, folder: string) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSettings(prev => ({ ...prev, [settingKey]: URL.createObjectURL(file) })); // Optimistic preview
-            try {
-                const publicUrl = await handleFileUpload(file, folder);
-                setSettings(prev => ({ ...prev, [settingKey]: publicUrl }));
-            } catch (error) {
-                console.error("File upload failed:", error);
-                showNotification("Gagal mengunggah file.");
-                // Optionally revert to old image url
-            }
-        }
-    };
-    
-    const handleSave = async (settingsToSave: {key: string, value: string}[], successMsg: string) => {
-        setSaving(true);
-        const { error } = await supabase.from('settings').upsert(settingsToSave, { onConflict: 'key' });
-        setSaving(false);
-        if (error) {
-            console.error("Error saving settings:", error);
-            showNotification("Gagal menyimpan perubahan.");
-        } else {
-            showNotification(successMsg);
-        }
-    };
-
-    const handleSaveUser = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-            if (editingUser) { // Update existing user
-                const { error } = await supabase.from('users').update({ ...userFormData }).eq('id', editingUser.id);
-                if (error) throw error;
-                showNotification("Pengguna berhasil diperbarui.");
-            } else { // Create new user
-                const { error } = await supabase.from('users').insert([{ ...userFormData }]);
-                if (error) throw error;
-                showNotification("Pengguna berhasil ditambahkan.");
-            }
-            fetchDashboardData(); // Refresh user list
-            setIsModalOpen(false);
-        } catch (error) {
-            console.error("Error saving user:", error);
-            showNotification("Gagal menyimpan data pengguna.");
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    // --- MODAL CONTROLS ---
-    const openAddModal = () => {
-        setEditingUser(null);
-        setUserFormData({ name: '', email: '', role: 'Admin' });
-        setIsModalOpen(true);
-    };
-
-    const openEditModal = (user: User) => {
-        setEditingUser(user);
-        setUserFormData(user);
-        setIsModalOpen(true);
-    };
-    
-    // --- RENDER LOGIC ---
-    const renderContent = () => {
-        if (loading) {
-            return <div className="text-center p-10 text-gray-500">Memuat pengaturan...</div>
-        }
-
-        switch (activeTab) {
-            case 'general':
-                return (
-                    <div className="space-y-8">
-                        <ControlCard 
-                            title="Identitas Situs"
-                            actionSection={
-                                <button onClick={() => handleSave([
-                                    { key: 'logoUrl', value: settings.logoUrl },
-                                    { key: 'faviconUrl', value: settings.faviconUrl },
-                                ], "Identitas situs disimpan!")} 
-                                disabled={saving}
-                                className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
-                                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                                </button>
-                            }
-                        >
-                            <FileUpload label="Logo Aplikasi" previewUrl={settings.logoUrl} onFileChange={(e) => handleFileChange(e, 'logoUrl', 'assets')} />
-                            <FileUpload label="Favicon (.ico, .svg, .png)" previewUrl={settings.faviconUrl} onFileChange={(e) => handleFileChange(e, 'faviconUrl', 'assets')} />
-                        </ControlCard>
-                        <ControlCard 
-                            title="Pengaturan Aplikasi"
-                             actionSection={
-                                <button onClick={() => handleSave([{ key: 'registrationEnabled', value: String(settings.registrationEnabled) }], "Pengaturan aplikasi disimpan!")} 
-                                disabled={saving}
-                                className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
-                                    {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                                </button>
-                            }
-                        >
-                            <ToggleSwitch label="Aktifkan Pendaftaran" enabled={settings.registrationEnabled} onToggle={(val) => setSettings(s => ({...s, registrationEnabled: val}))} />
-                            <p className="text-xs text-gray-500 -mt-4">
-                                {settings.registrationEnabled ? "Pengguna dapat mengakses halaman pendaftaran." : "Halaman pendaftaran akan disembunyikan dari pengguna."}
-                            </p>
-                        </ControlCard>
-                    </div>
-                );
-            case 'appearance':
-                return (
-                     <ControlCard 
-                        title="Kustomisasi Halaman Utama"
-                        actionSection={
-                            <button onClick={() => handleSave([
-                                { key: 'bannerUrl', value: settings.bannerUrl },
-                                { key: 'aboutContent', value: settings.aboutContent },
-                            ], "Tampilan disimpan!")} 
-                            disabled={saving}
-                            className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors disabled:bg-slate-400">
-                                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </button>
-                        }
-                    >
-                        <FileUpload label="Gambar Banner / Hero" previewUrl={settings.bannerUrl} onFileChange={(e) => handleFileChange(e, 'bannerUrl', 'assets')} />
-                        <div>
-                            <label htmlFor="aboutContent" className="block text-sm font-medium text-gray-700">Konten "Tentang Kami" di Beranda</label>
-                            <textarea
-                                id="aboutContent"
-                                rows={5}
-                                value={settings.aboutContent}
-                                onChange={(e) => setSettings(s => ({...s, aboutContent: e.target.value}))}
-                                className="mt-2 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm"
-                            />
-                        </div>
-                    </ControlCard>
-                );
-             case 'access':
-                return (
-                    <ControlCard 
-                        title="Manajemen Akses Pengguna"
-                        actionSection={
-                            <button onClick={openAddModal} className="px-5 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                                Tambah Pengguna Baru
-                            </button>
-                        }
-                    >
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-200">
-                                <thead className="bg-slate-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
-                                        <th scope="col" className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-slate-200">
-                                    {users.map((user) => (
-                                        <tr key={user.email}>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
-                                                    {user.role}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <button onClick={() => openEditModal(user)} className="text-slate-600 hover:text-slate-900">Edit</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </ControlCard>
-                );
-            default:
-                return null;
-        }
-    };
+    const stats = [
+        { title: "T.U.K.", value: 22, color: "bg-cyan-500", icon: <CardIcon viewBox="0 0 20 20" path="M18 8a6 6 0 0 0-12 0c0 3.313 2.687 6 6 6s6-2.687 6-6zm-6 4a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM2 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1z" /> },
+        { title: "Skema Sertifikasi", value: 20, color: "bg-blue-500", icon: <CardIcon viewBox="0 0 20 20" path="M17 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14zm0 2H3v12h14V4zM7 8a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1z" /> },
+        { title: "Asesor", value: 41, color: "bg-green-500", icon: <CardIcon path="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /> },
+        { title: "Asesi / Calon Asesi", value: 1247, color: "bg-orange-400", icon: <CardIcon path="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /> },
+        { title: "Uji Kompetensi", value: 31, color: "bg-indigo-500", icon: <CardIcon path="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-1 14H7v-2h6v2zm-1-4H7v-2h5v2zm-2-4H7V6h2v2z" /> },
+        { title: "Jadwal Asesmen", value: 150, color: "bg-pink-500", icon: <CardIcon path="M17 10H7v2h10v-2zm2-7h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-5-5H7v2h7v-2z" /> },
+    ];
     
     return (
-        <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-full">
-            <SuccessNotification message={successMessage} show={showSuccess} />
+        <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
+            <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+            <p className="text-gray-500 mb-6">Sistem Informasi Lembaga Sertifikasi Profesi</p>
             
-            {isModalOpen && (
-                 <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4" aria-modal="true">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-                        <form onSubmit={handleSaveUser}>
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                                    <input type="text" name="name" id="name" value={userFormData.name} onChange={(e) => setUserFormData(s => ({...s, name: e.target.value}))} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"/>
-                                </div>
-                                <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                                    <input type="email" name="email" id="email" value={userFormData.email} onChange={(e) => setUserFormData(s => ({...s, email: e.target.value}))} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"/>
-                                </div>
-                                <div>
-                                    <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
-                                    <select name="role" id="role" value={userFormData.role} onChange={(e) => setUserFormData(s => ({...s, role: e.target.value as User['role']}))} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-white">
-                                        <option>Admin</option>
-                                        <option>Asesor</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="mt-6 flex justify-end space-x-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Batal</button>
-                                <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:bg-slate-400">{saving ? 'Menyimpan...' : 'Simpan'}</button>
-                            </div>
-                        </form>
-                    </div>
-                 </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                {stats.map(stat => <StatCard key={stat.title} {...stat} />)}
+            </div>
 
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-800">Pengaturan Website</h1>
-                <p className="mt-1 text-gray-600">Kelola identitas, tampilan, dan fungsionalitas aplikasi LSP dari sini.</p>
-            </div>
-            
-            <div className="border-b border-slate-200 mb-8">
-                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                    <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')}>General</TabButton>
-                    <TabButton active={activeTab === 'appearance'} onClick={() => setActiveTab('appearance')}>Tampilan</TabButton>
-                    <TabButton active={activeTab === 'access'} onClick={() => setActiveTab('access')}>Manajemen Akses</TabButton>
-                </nav>
-            </div>
-            
-            <div>
-                {renderContent()}
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div className="lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
+                    <h3 className="font-bold text-gray-800 mb-4">Pendaftar dan Kandidat Tahun 2024</h3>
+                    {/* Chart placeholder */}
+                    <div className="h-72 bg-gray-100 rounded-md flex items-center justify-center">
+                        <p className="text-gray-500">Line Chart Placeholder</p>
+                    </div>
+                </div>
+                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                    <div className="mb-6">
+                        <h3 className="font-bold text-gray-800 mb-4">Kemajuan Proses Administratif</h3>
+                        <div className="space-y-4">
+                            <ProgressBar label="Data Asesi telah melengkapi berkas" percentage={0} value="0% (3/1247)" color="bg-blue-600" />
+                            <ProgressBar label="Data asesmen diproses (terjadwal)" percentage={100} value="100% (1279/1281)" color="bg-blue-600" />
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-800 mb-4">Prosentase Hasil Asesmen</h3>
+                        <div className="space-y-4">
+                            <ProgressBar label="Data Asesmen dinyatakan Kompeten" percentage={75} value="75% (965/1281)" color="bg-green-500" />
+                            <ProgressBar label="Data Asesmen dinyatakan Belum Kompeten" percentage={24} value="24% (313/1281)" color="bg-red-500" />
+                        </div>
+                    </div>
+                     <p className="text-xs text-gray-400 mt-4">*) Data Asesi &lt; Data asesmen, karena dimungkinkan asesi ikut lebih dari 1 skema</p>
+                </div>
             </div>
         </div>
     );
