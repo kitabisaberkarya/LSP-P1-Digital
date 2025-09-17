@@ -1,6 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import type { CertificationScheme } from '../types';
+import { schemesData } from '../constants';
+
+// Data structure for cascading address dropdowns
+const addressData = {
+  "JAWA TIMUR": {
+    "KOTA SURABAYA": {
+      "Wonokromo": ["Darmo", "Jagir", "Ngagel", "Sawunggaling", "Wonokromo"],
+      "Gubeng": ["Airlangga", "Gubeng", "Kertajaya", "Mojo", "Pucangsewu"],
+      "Tandes": ["Balongsari", "Banjar Sugihan", "Karang Poh", "Manukan Kulon", "Manukan Wetan", "Tandes"]
+    },
+    "KAB. BLITAR": {
+      "Wlingi": ["Beru", "Klemunan", "Tangkil", "Tembalang", "Wlingi"],
+      "Talun": ["Bajang", "Jeblog", "Kamulan", "Sragi", "Talun", "Tumpang"],
+      "Garum": ["Bence", "Garum", "Karangrejo", "Slorok", "Tingal"]
+    },
+    "KAB. SIDOARJO": {
+        "Sidoarjo": ["Bulu Sidokare", "Cemeng Kalang", "Celep", "Pekauman", "Sekardangan"],
+        "Waru": ["Bungurasih", "Kureksari", "Medaeng", "Tambak Sawah", "Waru"]
+    }
+  },
+  "JAWA TENGAH": {
+    "KOTA SEMARANG": {
+      "Banyumanik": ["Banyumanik", "Gedawang", "Jabungan", "Pudakpayung", "Srondol Kulon"],
+      "Candisari": ["Candi", "Jatingaleh", "Jomblang", "Kaliwiru", "Tegalsari"],
+      "Gajahmungkur": ["Bendanduwur", "Bendanngisor", "Gajahmungkur", "Karangrejo"]
+    },
+    "KAB. KUDUS": {
+      "Jati": ["Jati Kulon", "Jati Wetan", "Loram Kulon", "Pasuruan Lor", "Tanjungkarang"],
+      "Kota Kudus": ["Purwosari", "Panjunan", "Langgardalem", "Kauman", "Kerjasan"],
+    }
+  },
+  "DKI JAKARTA": {
+      "JAKARTA PUSAT": {
+          "Gambir": ["Cideng", "Duri Pulo", "Gambir", "Kebon Kelapa", "Petojo Selatan"],
+          "Senen": ["Bungur", "Kenari", "Kramat", "Kwitang", "Paseban", "Senen"]
+      },
+      "JAKARTA SELATAN": {
+          "Kebayoran Baru": ["Cipete Utara", "Gandaria Utara", "Gunung", "Kramat Pela", "Melawai"],
+          "Tebet": ["Bukit Duri", "Kebon Baru", "Manggarai", "Menteng Dalam", "Tebet Barat"]
+      }
+  }
+};
+
+const provinces = Object.keys(addressData);
 
 // New component for the FAQ accordion
 const AccordionItem: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
@@ -58,30 +101,66 @@ const RegistrationPage: React.FC = () => {
         securityCode: '',
     });
 
-    const [schemes, setSchemes] = useState<CertificationScheme[]>([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Dummy data for dropdowns
-    const provinces = ['JAWA TIMUR', 'JAWA TENGAH', 'JAWA BARAT', 'DKI JAKARTA'];
-    const cities = ['KAB. BLITAR', 'KAB. TULUNGAGUNG', 'KOTA MALANG', 'KOTA SURABAYA'];
-    const districts = ['Wlingi', 'Kepanjen', 'Gondang', 'Wonokromo'];
-    const villages = ['Beru', 'Kepanjen', 'Wlingi', 'Darmo'];
-    const regions = ['LSP P1 SMK PGRI Wlingi', 'TUK Sewan', 'TUK Mandiri'];
+    // Dynamic options for address dropdowns
+    const [cities, setCities] = useState<string[]>([]);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [villages, setVillages] = useState<string[]>([]);
+    
+    // Use static schemes data
+    const schemes = schemesData;
+    const regions = ['LSP P1 SMK DR. SOETOMO SURABAYA', 'TUK Sewan', 'TUK Mandiri'];
     const securityCodeValue = "3219";
 
+    // Effect for populating cities based on province
     useEffect(() => {
-        const fetchSchemes = async () => {
-            const { data, error } = await supabase.from('schemes').select('id, title');
-            if (error) {
-                console.error('Error fetching schemes for form', error);
-            } else {
-                setSchemes(data || []);
-            }
-        };
-        fetchSchemes();
-    }, []);
+      if (formData.province) {
+          const provinceData = addressData[formData.province as keyof typeof addressData];
+          const cityKeys = Object.keys(provinceData);
+          setCities(cityKeys);
+          // Reset downstream selections
+          setFormData(prev => ({ ...prev, city: '', district: '', village: '' }));
+          setDistricts([]);
+          setVillages([]);
+      } else {
+          setCities([]);
+          setDistricts([]);
+          setVillages([]);
+      }
+    }, [formData.province]);
+    
+    // Effect for populating districts based on city
+    useEffect(() => {
+        if (formData.province && formData.city) {
+            const provinceData = addressData[formData.province as keyof typeof addressData];
+            const cityData = provinceData[formData.city as keyof typeof provinceData];
+            const districtKeys = Object.keys(cityData);
+            setDistricts(districtKeys);
+            // Reset downstream selections
+            setFormData(prev => ({ ...prev, district: '', village: '' }));
+            setVillages([]);
+        } else {
+            setDistricts([]);
+            setVillages([]);
+        }
+    }, [formData.city]);
+
+    // Effect for populating villages based on district
+    useEffect(() => {
+        if (formData.province && formData.city && formData.district) {
+            const provinceData = addressData[formData.province as keyof typeof addressData];
+            const cityData = provinceData[formData.city as keyof typeof provinceData];
+            const districtData = cityData[formData.district as keyof typeof cityData];
+            setVillages(districtData);
+            // Reset downstream selections
+            setFormData(prev => ({ ...prev, village: '' }));
+        } else {
+            setVillages([]);
+        }
+    }, [formData.district]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -169,10 +248,10 @@ const RegistrationPage: React.FC = () => {
       </div>
     );
     
-    const FormSelect: React.FC<{ label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: (string | {id: string, title: string})[]; required?: boolean; placeholder: string }> = ({ label, name, value, onChange, options, required = true, placeholder }) => (
+    const FormSelect: React.FC<{ label: string; name: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: (string | {id: string, title: string})[]; required?: boolean; placeholder: string; disabled?: boolean; }> = ({ label, name, value, onChange, options, required = true, placeholder, disabled = false }) => (
        <div>
           <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}{required && <span className="text-red-500">*</span>}</label>
-          <select id={name} name={name} value={value} onChange={onChange} required={required} className="py-2 px-3 block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md bg-white">
+          <select id={name} name={name} value={value} onChange={onChange} required={required} disabled={disabled} className="py-2 px-3 block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed">
               <option value="" disabled>{placeholder}</option>
               {options.map(option => {
                   const val = typeof option === 'string' ? option : option.id;
@@ -216,9 +295,9 @@ const RegistrationPage: React.FC = () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                <FormSelect label="Provinsi" name="province" value={formData.province} onChange={handleChange} options={provinces} required={false} placeholder="Pilih Provinsi" />
-                               <FormSelect label="Kota/Kabupaten" name="city" value={formData.city} onChange={handleChange} options={cities} required={false} placeholder="Pilih Kota/Kabupaten" />
-                               <FormSelect label="Kecamatan" name="district" value={formData.district} onChange={handleChange} options={districts} required={false} placeholder="Pilih Kecamatan" />
-                               <FormSelect label="Kelurahan" name="village" value={formData.village} onChange={handleChange} options={villages} required={false} placeholder="Pilih Kelurahan" />
+                               <FormSelect label="Kota/Kabupaten" name="city" value={formData.city} onChange={handleChange} options={cities} required={false} placeholder="Pilih Kota/Kabupaten" disabled={!formData.province || cities.length === 0} />
+                               <FormSelect label="Kecamatan" name="district" value={formData.district} onChange={handleChange} options={districts} required={false} placeholder="Pilih Kecamatan" disabled={!formData.city || districts.length === 0} />
+                               <FormSelect label="Kelurahan" name="village" value={formData.village} onChange={handleChange} options={villages} required={false} placeholder="Pilih Kelurahan" disabled={!formData.district || villages.length === 0} />
                             </div>
 
                             <FormSelect label="Di wilayah mana Anda menginginkan Uji Kompetensi?" name="testRegion" value={formData.testRegion} onChange={handleChange} options={regions} placeholder="Pilih Wilayah" />

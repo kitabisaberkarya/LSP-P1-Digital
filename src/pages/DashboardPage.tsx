@@ -16,7 +16,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ role, onLogout }) => {
   const userMap = {
     asesi: { name: 'Budi Santoso', email: 'budi.santoso@email.com' },
     asesor: { name: 'Siti Aminah, S.Kom', email: 's.aminah@email.com' },
-    admin: { name: 'Admin LSP', email: 'admin.lsp@smkdrsoetomo.sch.id' },
+    admin: { name: 'Admin LSP', email: 'lspsmkdr.soetosby@gmail.com' },
     superadmin: { name: 'Dhega Febiharsa', email: 'febiharsa@gmail.com' },
   };
 

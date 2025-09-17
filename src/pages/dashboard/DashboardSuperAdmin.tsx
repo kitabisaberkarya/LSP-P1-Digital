@@ -24,9 +24,9 @@ const CardIcon: React.FC<{ path: string, viewBox?: string }> = ({ path, viewBox 
 
 const DashboardSuperAdmin: React.FC = () => {
     const stats = [
-        { title: "T.U.K.", value: 22, color: "bg-cyan-500", icon: <CardIcon viewBox="0 0 20 20" path="M18 8a6 6 0 0 0-12 0c0 3.313 2.687 6 6 6s6-2.687 6-6zm-6 4a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM2 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1z" /> },
-        { title: "Skema Sertifikasi", value: 20, color: "bg-blue-500", icon: <CardIcon viewBox="0 0 20 20" path="M17 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14zm0 2H3v12h14V4zM7 8a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1z" /> },
-        { title: "Asesor", value: 41, color: "bg-green-500", icon: <CardIcon path="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /> },
+        { title: "T.U.K.", value: 1, color: "bg-cyan-500", icon: <CardIcon viewBox="0 0 20 20" path="M18 8a6 6 0 0 0-12 0c0 3.313 2.687 6 6 6s6-2.687 6-6zm-6 4a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM2 18a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1z" /> },
+        { title: "Skema Sertifikasi", value: 12, color: "bg-blue-500", icon: <CardIcon viewBox="0 0 20 20" path="M17 2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14zm0 2H3v12h14V4zM7 8a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1zm4 0a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1z" /> },
+        { title: "Asesor", value: 17, color: "bg-green-500", icon: <CardIcon path="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /> },
         { title: "Asesi / Calon Asesi", value: 1247, color: "bg-orange-400", icon: <CardIcon path="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" /> },
         { title: "Uji Kompetensi", value: 31, color: "bg-indigo-500", icon: <CardIcon path="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-1 14H7v-2h6v2zm-1-4H7v-2h5v2zm-2-4H7V6h2v2z" /> },
         { title: "Jadwal Asesmen", value: 150, color: "bg-pink-500", icon: <CardIcon path="M17 10H7v2h10v-2zm2-7h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-5-5H7v2h7v-2z" /> },

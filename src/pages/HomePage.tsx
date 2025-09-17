@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { Page } from '../App';
 import type { CertificationScheme } from '../types';
@@ -47,17 +46,43 @@ const HeroSection: React.FC<{ navigate: (page: Page) => void }> = ({ navigate })
   </div>
 );
 
-const AboutSnippet: React.FC = () => (
-    <div className="py-16 bg-gray-50 overflow-hidden">
+const ProfileSnippet: React.FC = () => (
+    <div className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-                <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Tentang Kami</h2>
-                <p className="mt-2 text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
-                    Lembaga Sertifikasi Profesi Pihak Pertama
-                </p>
-                <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-                    LSP P1 SMK DR. SOETOMO SURABAYA didirikan oleh sekolah untuk memastikan setiap siswa memiliki bukti kompetensi yang diakui secara nasional oleh BNSP, membuka gerbang menuju karir profesional.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                {/* Left Column: Profile Info */}
+                <div>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+                        SMK Dr. Soetomo Surabaya
+                    </h2>
+                    <p className="mt-2 text-lg text-gray-600">
+                        Profile Lembaga Sertifikasi Profesi (LSP)
+                    </p>
+                    <dl className="mt-6 space-y-3 text-sm">
+                        <div className="flex"><dt className="w-40 font-medium text-gray-500 shrink-0">No. SK Lisensi</dt><dd className="text-gray-900">: KEP.0933/BNSP/IV/2025</dd></div>
+                        <div className="flex"><dt className="w-40 font-medium text-gray-500 shrink-0">No Lisensi</dt><dd className="text-gray-900">: BNSP-LSP-1279-ID</dd></div>
+                        <div className="flex"><dt className="w-40 font-medium text-gray-500 shrink-0">Status Lisensi</dt><dd className="text-gray-900">: <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktif</span></dd></div>
+                        <div className="flex"><dt className="w-40 font-medium text-gray-500 shrink-0">Alamat</dt><dd className="text-gray-900">: JL. Karang Menjangan - Jojoran IV/ 2D Surabaya</dd></div>
+                    </dl>
+                </div>
+                {/* Right Column: Data Overview */}
+                <div className="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">Data Overview</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                            <p className="text-lg font-semibold text-gray-700">Tempat Uji Kompetensi (TUK)</p>
+                            <p className="text-3xl font-bold text-blue-600">1</p>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                            <p className="text-lg font-semibold text-gray-700">Skema Sertifikasi</p>
+                            <p className="text-3xl font-bold text-blue-600">12</p>
+                        </div>
+                        <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                            <p className="text-lg font-semibold text-gray-700">Asesor Kompetensi</p>
+                            <p className="text-3xl font-bold text-blue-600">17</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -173,7 +198,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigate }) => {
   return (
     <div>
       <HeroSection navigate={navigate} />
-      <AboutSnippet />
+      <ProfileSnippet />
       <BenefitsSection />
       <FeaturedSchemes navigate={navigate} />
     </div>

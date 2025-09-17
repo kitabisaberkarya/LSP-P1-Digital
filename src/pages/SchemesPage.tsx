@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { Page } from '../App';
 import SchemeCard from '../components/SchemeCard';
-import { supabase } from '../lib/supabaseClient';
+import { schemesData } from '../constants';
 import type { CertificationScheme } from '../types';
 
 interface SchemesPageProps {
@@ -10,26 +9,8 @@ interface SchemesPageProps {
 }
 
 const SchemesPage: React.FC<SchemesPageProps> = ({ navigate }) => {
-  const [schemes, setSchemes] = useState<CertificationScheme[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSchemes = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('schemes')
-        .select('id, title, description');
-
-      if (error) {
-        console.error('Error fetching schemes:', error);
-      } else {
-        setSchemes(data || []);
-      }
-      setLoading(false);
-    };
-
-    fetchSchemes();
-  }, []);
+  const schemes: CertificationScheme[] = schemesData;
+  const loading = false;
 
   return (
     <div className="bg-white py-16 sm:py-24">
